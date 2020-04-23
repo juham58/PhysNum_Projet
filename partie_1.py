@@ -1,7 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+import matplotlib.patches as patches
 import time
+from mpl_toolkits import mplot3d
 
 
 # définition de la constante gravitationnelle
@@ -50,10 +52,11 @@ def F_TL(corps, r_A, r_B):
 
 
 def mouton_3_corps(t_i, t_f, N, c_init, F, slice=0):
+    t_debut = time.process_time()
     t_points = np.linspace(t_i, t_f, N)
-    rA_arr = np.zeros((len(t_points), 2))
-    rB_arr = np.zeros((len(t_points), 2))
-    rC_arr = np.zeros((len(t_points), 2))
+    rA_arr = np.zeros((len(t_points), 3))
+    rB_arr = np.zeros((len(t_points), 3))
+    rC_arr = np.zeros((len(t_points), 3))
     h = (t_f-t_i)/N
 
     r_Ai, r_Bi, r_Ci = c_init[0][0], c_init[0][1], c_init[0][2]
@@ -95,9 +98,9 @@ def mouton_3_corps(t_i, t_f, N, c_init, F, slice=0):
     r_C = r_Ci
 
     # on enregistre la première rangée des array contenant les positions et t
-    rA_arr[0][0], rA_arr[0][1] = r_A[0], r_A[1]
-    rB_arr[0][0], rB_arr[0][1] = r_B[0], r_B[1]
-    rC_arr[0][0], rC_arr[0][1] = r_C[0], r_C[1]
+    rA_arr[0][0], rA_arr[0][1], rA_arr[0][2] = r_A[0], r_A[1], r_A[2]
+    rB_arr[0][0], rB_arr[0][1], rB_arr[0][2] = r_B[0], r_B[1], r_B[2]
+    rC_arr[0][0], rC_arr[0][1], rC_arr[0][2] = r_C[0], r_C[1], r_C[2]
 
     # début des calculs par sauts
     for i, t in enumerate(t_points[1:]):
@@ -118,12 +121,19 @@ def mouton_3_corps(t_i, t_f, N, c_init, F, slice=0):
         r_B_demie = r_B_demie + h*v_B
         r_C_demie = r_C_demie + h*v_C
 
-        rA_arr[i+1][0], rA_arr[i+1][1] = r_A[0], r_A[1]
-        rB_arr[i+1][0], rB_arr[i+1][1] = r_B[0], r_B[1]
-        rC_arr[i+1][0], rC_arr[i+1][1] = r_C[0], r_C[1]
+        rA_arr[i+1][0], rA_arr[i+1][1], rA_arr[i+1][2] = r_A[0], r_A[1], r_A[2]
+        rB_arr[i+1][0], rB_arr[i+1][1], rB_arr[i+1][2] = r_B[0], r_B[1], r_B[2]
+        rC_arr[i+1][0], rC_arr[i+1][1], rC_arr[i+1][2] = r_C[0], r_C[1], r_C[2]
+
+        proximite = np.abs(np.linalg.norm(r_B-r_A))
+        if proximite <= 8993.92*1e3:
+            print("Limite de Roche", t/(24*3600), "jours", "Distance: ", proximite)
+
+        if proximite >= 1.47146e9:
+            print("Hill Sphere: ", t/(24*3600), "jours", "Distance: ", proximite)
 
     if slice == 0:
-        return {"A": rA_arr, "B": rB_arr, "C": rC_arr, "t": t_points}
+        return {"A": rA_arr, "B": rB_arr, "L": rB_arr-rA_arr, "t": t_points}
 
     # coupe de moitié les array de résultats un nombre de fois égale à slice
     # permet donc aux animations d'être observées dans un délai raisonnable
@@ -132,14 +142,15 @@ def mouton_3_corps(t_i, t_f, N, c_init, F, slice=0):
         rB_arr = np.delete(rB_arr, np.s_[1::2], 0)
         rC_arr = np.delete(rC_arr, np.s_[1::2], 0)
         t_points = np.delete(t_points, np.s_[1::2], 0)
-    return {"A": rA_arr, "B": rB_arr, "C": rC_arr, "t": t_points}
+    print("temps exec: ", time.process_time()-t_debut)
+    return {"A": rA_arr, "B": rB_arr, "L": rB_arr-rA_arr, "t": t_points}
 
 
 def mouton_2_corps(t_i, t_f, N, c_init, F, slice=0):
     t_debut = time.process_time()
     t_points = np.linspace(t_i, t_f, N)
-    rA_arr = np.zeros((len(t_points), 2))
-    rB_arr = np.zeros((len(t_points), 2))
+    rA_arr = np.zeros((len(t_points), 3))
+    rB_arr = np.zeros((len(t_points), 3))
     h = (t_f-t_i)/N
 
     r_Ai, r_Bi = c_init[0][0], c_init[0][1]
@@ -173,8 +184,8 @@ def mouton_2_corps(t_i, t_f, N, c_init, F, slice=0):
     r_B = r_Bi
 
     # on enregistre la première rangée des array contenant les positions et t
-    rA_arr[0][0], rA_arr[0][1] = r_A[0], r_A[1]
-    rB_arr[0][0], rB_arr[0][1] = r_B[0], r_B[1]
+    rA_arr[0][0], rA_arr[0][1], rA_arr[0][2] = r_A[0], r_A[1], r_A[2]
+    rB_arr[0][0], rB_arr[0][1], rB_arr[0][2] = r_B[0], r_B[1], r_B[2]
 
     # début des calculs par sauts
     for i, t in enumerate(t_points[1:]):
@@ -191,11 +202,16 @@ def mouton_2_corps(t_i, t_f, N, c_init, F, slice=0):
         r_A_demie = r_A_demie + h*v_A
         r_B_demie = r_B_demie + h*v_B
 
-        rA_arr[i+1][0], rA_arr[i+1][1] = r_A[0], r_A[1]
-        rB_arr[i+1][0], rB_arr[i+1][1] = r_B[0], r_B[1]
+        rA_arr[i+1][0], rA_arr[i+1][1], rA_arr[i+1][2] = r_A[0], r_A[1], r_A[2]
+        rB_arr[i+1][0], rB_arr[i+1][1], rB_arr[i+1][2] = r_B[0], r_B[1], r_B[2]
+
+        proximite = np.abs(np.linalg.norm(r_B-r_A))
+        #print(r_A)
+        if proximite <= 8993.92*1e3:
+            print("Limite de Roche", t/(24*3600), " jours", "Distance: ", proximite)
 
     if slice == 0:
-        return {"A": rA_arr, "B": rB_arr, "t": t_points}
+        return {"A": rA_arr, "B": rB_arr, "L": rB_arr-rA_arr, "t": t_points}
 
     # coupe de moitié les array de résultats un nombre de fois égale à slice
     # permet donc aux animations d'être observées dans un délai raisonnable
@@ -233,6 +249,50 @@ def anim_3_corps(t_i, t_f, N, c_init, F, slice):
     plt.show()
 
 
+def anim_2_corps_satellite(t_i, t_f, N, c_init, F, slice):
+    mouton = mouton_2_corps(t_i, t_f, N, c_init, F, slice)
+    fig, ax = plt.subplots()
+    ax.set(xlim=(-4e8, 4e8), ylim=(-4e8, 4e8))
+
+    ligne_S, = ax.plot(c_init[0][1][0], c_init[0][1][1], 'r-', label="Satellite", zorder=3)
+    cercle = plt.Circle((0, 0), radius=1993920, alpha=0.95, zorder=10, color="maroon")
+    ax.add_patch(cercle)
+
+    anim_ligne_S = lambda i: ligne_S.set_data(mouton["L"][:i, 0], mouton["L"][:i, 1])
+    anim_lim_roche = lambda i: cercle.set_center((mouton["L"][i, 0], mouton["L"][i, 1]))
+    anim_titre = lambda i: ax.set_title("Mouvement des trois corps\nà t= {} jours".format(round(mouton["t"][i]/(24*3600), 3)))
+
+    frames_anim = len(mouton["t"])
+    graph_anim_S = FuncAnimation(fig, anim_ligne_S, frames=frames_anim, interval=1)
+    graph_roche = FuncAnimation(fig, anim_lim_roche, frames=frames_anim, interval=1)
+    graph_anim_titre = FuncAnimation(fig, anim_titre, frames=frames_anim, interval=1)
+    ax.add_patch(patches.Circle((0, 0), radius=8993920, alpha=0.6, color="black"))
+    plt.legend()
+    plt.grid()
+    plt.show()
+
+def anim_3_corps_satellite(t_i, t_f, N, c_init, F, slice):
+    mouton = mouton_3_corps(t_i, t_f, N, c_init, F, slice)
+    fig, ax = plt.subplots()
+    ax.set(xlim=(-4e8, 4e8), ylim=(-4e8, 4e8))
+
+    ligne_S, = ax.plot(c_init[0][1][0], c_init[0][1][1], 'r--', linewidth=0.5, label="Satellite", zorder=3)
+    cercle = plt.Circle((0, 0), radius=1993920, alpha=0.95, zorder=10, color="maroon")
+    ax.add_patch(cercle)
+
+    anim_ligne_S = lambda i: ligne_S.set_data(mouton["L"][:i, 0], mouton["L"][:i, 1])
+    anim_lim_roche = lambda i: cercle.set_center((mouton["L"][i, 0], mouton["L"][i, 1]))
+    anim_titre = lambda i: ax.set_title("Mouvement des trois corps\nà t= {} jours".format(round(mouton["t"][i]/(24*3600), 3)))
+
+    frames_anim = len(mouton["t"])
+    graph_anim_S = FuncAnimation(fig, anim_ligne_S, frames=frames_anim, interval=1)
+    graph_roche = FuncAnimation(fig, anim_lim_roche, frames=frames_anim, interval=1)
+    graph_anim_titre = FuncAnimation(fig, anim_titre, frames=frames_anim, interval=1)
+    ax.add_patch(patches.Circle((0, 0), radius=8993920, alpha=0.6, color="black"))
+    plt.legend()
+    plt.grid()
+    plt.show()
+
 def anim_2_corps(t_i, t_f, N, c_init, F, slice):
     mouton = mouton_2_corps(t_i, t_f, N, c_init, F, slice)
     fig, ax = plt.subplots()
@@ -240,22 +300,62 @@ def anim_2_corps(t_i, t_f, N, c_init, F, slice):
 
     ligne_A, = ax.plot(c_init[0][0][0], c_init[0][0][1], 'b-', label="Corps A", zorder=2)
     ligne_B, = ax.plot(c_init[0][1][0], c_init[0][1][1], 'g-', label="Corps B", zorder=3)
-    ligne_S, = ax.plot(c_init[0][1][0], c_init[0][1][1], 'g-', label="Satellite", zorder=3)
+    cercle = plt.Circle((0, 0), radius=8993920, alpha=0.6, color="black")
+    ax.add_patch(cercle)
 
-    #anim_ligne_A = lambda i: ligne_A.set_data(mouton["A"][:i, 0], mouton["A"][:i, 1])
-    #anim_ligne_B = lambda i: ligne_B.set_data(mouton["B"][:i, 0], mouton["B"][:i, 1])
-    anim_ligne_S = lambda i: ligne_S.set_data(mouton["L"][:i, 0], mouton["L"][:i, 1])
-    anim_titre = lambda i: ax.set_title("Mouvement des trois corps\nà t= {}".format(round(mouton["t"][i], 3)))
+    anim_ligne_A = lambda i: ligne_A.set_data(mouton["A"][:i, 0], mouton["A"][:i, 1])
+    anim_ligne_B = lambda i: ligne_B.set_data(mouton["B"][:i, 0], mouton["B"][:i, 1])
+    anim_lim_roche = lambda i: cercle.set_center((mouton["A"][i, 0], mouton["A"][i, 1]))
+    anim_titre = lambda i: ax.set_title("Mouvement des trois corps\nà t= {} jours".format(round(mouton["t"][i]/(24*3600), 3)))
 
     frames_anim = len(mouton["t"])
-    #graph_anim_A = FuncAnimation(fig, anim_ligne_A, frames=frames_anim, interval=1)
-    #graph_anim_B = FuncAnimation(fig, anim_ligne_B, frames=frames_anim, interval=1)
-    graph_anim_S = FuncAnimation(fig, anim_ligne_S, frames=frames_anim, interval=1)
+    graph_anim_A = FuncAnimation(fig, anim_ligne_A, frames=frames_anim, interval=1)
+    graph_anim_B = FuncAnimation(fig, anim_ligne_B, frames=frames_anim, interval=1)
+    graph_roche = FuncAnimation(fig, anim_lim_roche, frames=frames_anim, interval=1)
     graph_anim_titre = FuncAnimation(fig, anim_titre, frames=frames_anim, interval=1)
     plt.legend()
     plt.grid()
     plt.show()
 
+def graph_3_corps(t_i, t_f, N, c_init, F, slice):
+    # on appelle une fois la fonction pour avoir les array de résultats
+    mouton = mouton_3_corps(t_i, t_f, N, c_init, F, slice)
 
-#anim_3_corps(0, 365.25*24*3600, 60000, sys_TSL, F_TSL, 10)
-anim_2_corps(0, 31*24*3600, 200000, sys_TL, F_TL, 10)
+    # puis on fait un graphique des trajectoires
+    fig = plt.figure()
+    plt.plot(mouton["L"][:, 0], mouton["L"][:, 1], 'r--', linewidth=0.1, label="Satellite")
+    plt.xlabel("Position en x [-]")
+    plt.ylabel("Position en y [-]")
+    plt.legend(loc=5, prop={'size': 10})
+    plt.grid()
+
+    plt.show()
+
+def graph_3_corps_3d(t_i, t_f, N, c_init, F):
+    # on appelle une fois la fonction pour avoir les array de résultats
+    mouton = mouton_3_corps(t_i, t_f, N, c_init, F)
+
+    # puis on fait un graphique des trajectoires
+    fig = plt.figure()
+    ax = plt.axes(projection="3d")
+    plt.plot(mouton["L"][:, 0], mouton["L"][:, 1], mouton["L"][:, 2], 'r--', linewidth=0.1, label="Satellite")
+    plt.xlabel("Position en x [-]")
+    plt.ylabel("Position en y [-]")
+    plt.legend(loc=5, prop={'size': 10})
+    plt.grid()
+
+    N=20
+    stride=1
+    u = np.linspace(0, 2 * np.pi, N)
+    v = np.linspace(0, np.pi, N)
+    x = np.outer(np.cos(u), np.sin(v))
+    y = np.outer(np.sin(u), np.sin(v))
+    z = np.outer(np.ones(np.size(u)), np.cos(v))
+    r = 8993920
+    ax.plot_surface(r*x, r*y, r*z, linewidth=0.0, cstride=stride, rstride=stride, alpha=0.6, color="black")
+
+    plt.show()
+
+
+# anim_3_corps(0, 365.25*24*3600, 60000, sys_TSL, F_TSL, 10)
+#graph_3_corps(0, 31*24*3600, 2000, sys_TL, F_TL)
