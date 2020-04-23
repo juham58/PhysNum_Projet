@@ -12,16 +12,6 @@ m_T = 5.9722*1e24
 m_S = 1.989*1e30
 m_L = 7.349*1e22
 
-# définition des constantes initiales (m et m/s)
-r_Ti = np.array([-1.281626781937739*1e11, -7.874213977476427*1e10, 1.169622431946918*1e7])
-r_Si = np.array([0, 0, 0])
-r_Li = np.array([-1.277825169776073*1e11, -7.860393013191698*1e10, -2.207933296514675*1e7])
-
-v_Ti = np.array([1.531400682940386*1e4, -2.537562925376570*1e4, 1.173818649602865])
-v_Si = np.array([0, 0, 0])
-v_Li = np.array([1.497454237339654*1e4, -2.446484169034256*1e4, 3.041640271121793*1e2])
-
-
 sys_TSL =[np.array([[-1.281626781937739*1e11, -7.874213977476427*1e10, 1.169622431946918*1e7],
                      [0, 0, 0],
                      [-1.277825169776073*1e11, -7.860393013191698*1e10, -2.207933296514675*1e7]]),
@@ -215,7 +205,7 @@ def mouton_2_corps(t_i, t_f, N, c_init, F, slice=0):
         t_points = np.delete(t_points, np.s_[1::2], 0)
 
     print("temps exec: ", time.process_time()-t_debut)
-    return {"A": rA_arr, "B": rB_arr, "t": t_points}
+    return {"A": rA_arr, "B": rB_arr, "L": rB_arr-rA_arr, "t": t_points}
 
 
 # fonction d'animation des trajectoires pour N jusqu'à un certain t
@@ -250,14 +240,17 @@ def anim_2_corps(t_i, t_f, N, c_init, F, slice):
 
     ligne_A, = ax.plot(c_init[0][0][0], c_init[0][0][1], 'b-', label="Corps A", zorder=2)
     ligne_B, = ax.plot(c_init[0][1][0], c_init[0][1][1], 'g-', label="Corps B", zorder=3)
+    ligne_S, = ax.plot(c_init[0][1][0], c_init[0][1][1], 'g-', label="Satellite", zorder=3)
 
-    anim_ligne_A = lambda i: ligne_A.set_data(mouton["A"][:i, 0], mouton["A"][:i, 1])
-    anim_ligne_B = lambda i: ligne_B.set_data(mouton["B"][:i, 0], mouton["B"][:i, 1])
+    #anim_ligne_A = lambda i: ligne_A.set_data(mouton["A"][:i, 0], mouton["A"][:i, 1])
+    #anim_ligne_B = lambda i: ligne_B.set_data(mouton["B"][:i, 0], mouton["B"][:i, 1])
+    anim_ligne_S = lambda i: ligne_S.set_data(mouton["L"][:i, 0], mouton["L"][:i, 1])
     anim_titre = lambda i: ax.set_title("Mouvement des trois corps\nà t= {}".format(round(mouton["t"][i], 3)))
 
     frames_anim = len(mouton["t"])
-    graph_anim_A = FuncAnimation(fig, anim_ligne_A, frames=frames_anim, interval=1)
-    graph_anim_B = FuncAnimation(fig, anim_ligne_B, frames=frames_anim, interval=1)
+    #graph_anim_A = FuncAnimation(fig, anim_ligne_A, frames=frames_anim, interval=1)
+    #graph_anim_B = FuncAnimation(fig, anim_ligne_B, frames=frames_anim, interval=1)
+    graph_anim_S = FuncAnimation(fig, anim_ligne_S, frames=frames_anim, interval=1)
     graph_anim_titre = FuncAnimation(fig, anim_titre, frames=frames_anim, interval=1)
     plt.legend()
     plt.grid()
@@ -265,4 +258,4 @@ def anim_2_corps(t_i, t_f, N, c_init, F, slice):
 
 
 #anim_3_corps(0, 365.25*24*3600, 60000, sys_TSL, F_TSL, 10)
-anim_2_corps(0, 3*31*24*3600, 600000, sys_TL, F_TL, 10)
+anim_2_corps(0, 31*24*3600, 200000, sys_TL, F_TL, 10)
