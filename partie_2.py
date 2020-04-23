@@ -1,8 +1,6 @@
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
-import time
-from partie_1 import mouton_2_corps, anim_2_corps, anim_2_corps_satellite, anim_3_corps_satellite, graph_3_corps
+from graphiques import graph_3_corps
+from anims import anim_2_corps, anim_2_corps_satellite, anim_3_corps_satellite
 
 
 # définition de la constante gravitationnelle
@@ -15,15 +13,19 @@ m_S = 1.989*1e30  # Soleil
 m_L = 7.349*1e22  # Lune
 m_M = 0.107*m_T  # Mars
 
+
+# système Terre-Mars
 sys_TM = [np.array([[0, 0, 0],
-                    [1.801612161666349*1e8, 1.382096428472888*1e8, -3.377555728461962*1e4]]),
+                    [3.801612161666349*1e8, 1.382096428472888*1e8, -3.377555728461962*1e4]]),
           np.array([[0, 0, 0],
                     [-3.394644560073193*1e2, 9.107875634231341*1e2, 2.924258406161673*1e1]])]
 
+
+# système Terre-Mars-Soleil
 sys_TMS = [np.array([[0, 0, 0],
-                    [3.801612161666349*1e8, 1.382096428472888*1e8, -3.377555728461962*1e7],
+                    [1.801612161666349*1e8, 1.382096428472888*1e8, -3.377555728461962*1e7],
                     [1.274562537709166e11, 7.981279122934923e10, -4.406210892602801*1e6]]),
-          np.array([[0, 0, 0],
+           np.array([[0, 0, 0],
                     [-3.394644560073193*1e2, 9.107875634231341*1e2, 2.924258406161673*1e1],
                     [-1.532817776260213e4, 2.537026724877958e4, -7.731597224385212e1]])]
 
@@ -51,4 +53,4 @@ def F_TMS(corps, r_A, r_B, r_C):
 
 
 #anim_3_corps_satellite(0, 100*12*31*24*3600, 2000000, sys_TMS, F_TMS, 6)
-graph_3_corps(0, 1000*12*31*24*3600, 2000000, sys_TMS, F_TMS, 4)
+graph_3_corps(0, 2*12*31*24*3600, 20000, sys_TMS, F_TMS, 0)
