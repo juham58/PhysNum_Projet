@@ -57,6 +57,7 @@ def mouton_3_corps(t_i, t_f, N, c_init, F, slice=0):
     rA_arr = np.zeros((len(t_points), 3))
     rB_arr = np.zeros((len(t_points), 3))
     rC_arr = np.zeros((len(t_points), 3))
+    prox_arr = np.zeros((len(t_points), 1))
     h = (t_f-t_i)/N
 
     r_Ai, r_Bi, r_Ci = c_init[0][0], c_init[0][1], c_init[0][2]
@@ -101,6 +102,8 @@ def mouton_3_corps(t_i, t_f, N, c_init, F, slice=0):
     rA_arr[0][0], rA_arr[0][1], rA_arr[0][2] = r_A[0], r_A[1], r_A[2]
     rB_arr[0][0], rB_arr[0][1], rB_arr[0][2] = r_B[0], r_B[1], r_B[2]
     rC_arr[0][0], rC_arr[0][1], rC_arr[0][2] = r_C[0], r_C[1], r_C[2]
+    proximite = np.abs(np.linalg.norm(r_B-r_A))
+    prox_arr[0][0] = proximite
 
     # début des calculs par sauts
     for i, t in enumerate(t_points[1:]):
@@ -126,14 +129,16 @@ def mouton_3_corps(t_i, t_f, N, c_init, F, slice=0):
         rC_arr[i+1][0], rC_arr[i+1][1], rC_arr[i+1][2] = r_C[0], r_C[1], r_C[2]
 
         proximite = np.abs(np.linalg.norm(r_B-r_A))
+        prox_arr[i+1][0] = proximite
         if proximite <= 8993.92*1e3:
             print("Limite de Roche", t/(24*3600), "jours", "Distance: ", proximite)
 
         if proximite >= 1.47146e9:
-            print("Hill Sphere: ", t/(24*3600), "jours", "Distance: ", proximite)
+            print("Sphère de Hill: ", t/(24*3600), "jours", "Distance: ", proximite)
 
     if slice == 0:
-        return {"A": rA_arr, "B": rB_arr, "L": rB_arr-rA_arr, "t": t_points}
+        print("temps exec: ", time.process_time()-t_debut)
+        return {"A": rA_arr, "B": rB_arr, "L": rB_arr-rA_arr, "P": prox_arr, "t": t_points}
 
     # coupe de moitié les array de résultats un nombre de fois égale à slice
     # permet donc aux animations d'être observées dans un délai raisonnable
@@ -143,7 +148,7 @@ def mouton_3_corps(t_i, t_f, N, c_init, F, slice=0):
         rC_arr = np.delete(rC_arr, np.s_[1::2], 0)
         t_points = np.delete(t_points, np.s_[1::2], 0)
     print("temps exec: ", time.process_time()-t_debut)
-    return {"A": rA_arr, "B": rB_arr, "L": rB_arr-rA_arr, "t": t_points}
+    return {"A": rA_arr, "B": rB_arr, "L": rB_arr-rA_arr, "P": prox_arr, "t": t_points}
 
 
 def mouton_2_corps(t_i, t_f, N, c_init, F, slice=0):
@@ -320,10 +325,13 @@ def anim_2_corps(t_i, t_f, N, c_init, F, slice):
 def graph_3_corps(t_i, t_f, N, c_init, F, slice):
     # on appelle une fois la fonction pour avoir les array de résultats
     mouton = mouton_3_corps(t_i, t_f, N, c_init, F, slice)
+    print(mouton["t"])
 
     # puis on fait un graphique des trajectoires
-    fig = plt.figure()
-    plt.plot(mouton["L"][:, 0], mouton["L"][:, 1], 'r--', linewidth=0.1, label="Satellite")
+    fig, ax = plt.subplots()
+    #ax.add_patch(patches.Circle((0, 0), radius=8993920, alpha=0.6, color="black"))
+    #plt.plot(mouton["L"][:, 0], mouton["L"][:, 1], 'r--', linewidth=0.1, label="Satellite")
+    plt.plot(mouton["t"], mouton["P"], 'r--', linewidth=1, label="Satellite")
     plt.xlabel("Position en x [-]")
     plt.ylabel("Position en y [-]")
     plt.legend(loc=5, prop={'size': 10})
@@ -357,5 +365,5 @@ def graph_3_corps_3d(t_i, t_f, N, c_init, F):
     plt.show()
 
 
-# anim_3_corps(0, 365.25*24*3600, 60000, sys_TSL, F_TSL, 10)
-#graph_3_corps(0, 31*24*3600, 2000, sys_TL, F_TL)
+#anim_3_corps(0, 365.25*24*3600, 60000, sys_TSL, F_TSL, 10)
+# graph_3_corps(0, 31*24*3600, 2000, sys_TL, F_TL, 0)
