@@ -58,7 +58,6 @@ def mouton_3_corps(t_i, t_f, N, c_init, F, slice=0):
 
     # début des calculs par sauts
     for i, t in enumerate(t_points[1:]):
-
         v_A = v_A + h*F("A", r_A_demie, r_B_demie, r_C_demie)
         v_B = v_B + h*F("B", r_A_demie, r_B_demie, r_C_demie)
         v_C = v_C + h*F("C", r_A_demie, r_B_demie, r_C_demie)

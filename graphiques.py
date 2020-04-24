@@ -4,10 +4,10 @@ import matplotlib.patches as patches
 from mpl_toolkits import mplot3d
 from saute_mouton import mouton_3_corps
 
+
 def graph_proximite(t_i, t_f, N, c_init, F, slice):
     # on appelle une fois la fonction pour avoir les array de résultats
     mouton = mouton_3_corps(t_i, t_f, N, c_init, F, slice)
-    print(mouton["t"])
 
     # puis on fait un graphique des trajectoires
     fig, ax = plt.subplots()
@@ -19,10 +19,10 @@ def graph_proximite(t_i, t_f, N, c_init, F, slice):
 
     plt.show()
 
+
 def graph_3_corps(t_i, t_f, N, c_init, F, slice):
     # on appelle une fois la fonction pour avoir les array de résultats
     mouton = mouton_3_corps(t_i, t_f, N, c_init, F, slice)
-    print(mouton["t"])
 
     # puis on fait un graphique des trajectoires
     fig, ax = plt.subplots()
