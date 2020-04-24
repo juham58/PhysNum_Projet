@@ -1,10 +1,10 @@
 import numpy as np
 import pickle
 from pathlib import Path
-from graphiques import graph_3_corps
+from graphiques import graph_3_corps, graph_stab
 from anims import anim_2_corps_satellite, anim_3_corps_satellite
 from saute_mouton import mouton_2_corps, mouton_3_corps
-
+np.set_printoptions(threshold=np.inf)
 
 # définition de la constante gravitationnelle
 G = 6.67408*1e-11
@@ -25,12 +25,12 @@ sys_TM = [np.array([[0, 0, 0],
 
 
 # système Terre-Mars-Soleil
-sys_TMS = [np.array([[0, 0, 0],
+sys_TMS = np.array([[[0, 0, 0],
                     [3.801612161666349*1e8, 1.382096428472888*1e8, -3.377555728461962*1e7],
-                    [1.274562537709166e11, 7.981279122934923e10, -4.406210892602801*1e6]]),
-           np.array([[0, 0, 0],
+                    [1.274562537709166e11, 7.981279122934923e10, -4.406210892602801*1e6]],
+                    [[0, 0, 0],
                     [-3.394644560073193*1e2, 9.107875634231341*1e2, 2.924258406161673*1e1],
-                    [-1.532817776260213e4, 2.537026724877958e4, -7.731597224385212e1]])]
+                    [-1.532817776260213e4, 2.537026724877958e4, -7.731597224385212e1]]])
 
 
 def F_TM(corps, r_A, r_B):
@@ -75,37 +75,37 @@ def chargement(nom_fichier):
 # sur une condition initiales var et enregistre les données
 def perturbations(t_i, t_f, N, c_init, F, slice=0, corps=3, var="x", nombre=10, ordre=1e7):
     if var == "x":
-        c_init[0][1][0] = c_init[0][1][0] - nombre/2*ordre
+        c_init[0][1][0] = c_init[0][1][0] - (nombre/2)*ordre
         for i in range(nombre):
             c_init[0][1][0] = c_init[0][1][0] + i*ordre
             sauvegarde(t_i, t_f, N, c_init, F, slice, corps, var, id=i)
 
     if var == "y":
-        c_init[0][1][1] = c_init[0][1][1] - nombre/2*ordre
+        c_init[0][1][1] = c_init[0][1][1] - (nombre/2)*ordre
         for i in range(nombre):
             c_init[0][1][1] = c_init[0][1][1] + i*ordre
             sauvegarde(t_i, t_f, N, c_init, F, slice, corps, var, id=i)
 
     if var == "z":
-        c_init[0][1][2] = c_init[0][1][2] - nombre/2*ordre
+        c_init[0][1][2] = c_init[0][1][2] - (nombre/2)*ordre
         for i in range(nombre):
             c_init[0][1][2] = c_init[0][1][2] + i*ordre
             sauvegarde(t_i, t_f, N, c_init, F, slice, corps, var, id=i)
 
     if var == "vx":
-        c_init[1][1][0] = c_init[1][1][0] - nombre/2*ordre
+        c_init[1][1][0] = c_init[1][1][0] - (nombre/2)*ordre
         for i in range(nombre):
             c_init[1][1][0] = c_init[1][1][0] + i*ordre
             sauvegarde(t_i, t_f, N, c_init, F, slice, corps, var, id=i)
 
     if var == "vy":
-        c_init[1][1][1] = c_init[1][1][1] - nombre/2*ordre
+        c_init[1][1][1] = c_init[1][1][1] - (nombre/2)*ordre
         for i in range(nombre):
             c_init[1][1][1] = c_init[1][1][1] + i*ordre
             sauvegarde(t_i, t_f, N, c_init, F, slice, corps, var, id=i)
 
     if var == "vz":
-        c_init[1][1][2] = c_init[1][1][2] - nombre/2*ordre
+        c_init[1][1][2] = c_init[1][1][2] - (nombre/2)*ordre
         for i in range(nombre):
             c_init[1][1][2] = c_init[1][1][2] + i*ordre
             sauvegarde(t_i, t_f, N, c_init, F, slice, corps, var, id=i)
@@ -115,8 +115,9 @@ def perturbations(t_i, t_f, N, c_init, F, slice=0, corps=3, var="x", nombre=10, 
 # temps en jours, noms des fichiers sans le dernier chiffre
 def stabilite(temps, N, nom_fichiers, nombre_fichiers=10):
     stabilite = np.zeros(nombre_fichiers)
+    c_init = []
     for n in range(nombre_fichiers):
-        mouton= chargement(nom_fichiers+str(n))
+        mouton = chargement(nom_fichiers+str(n))
         mois = int(31*N//temps)
         liste_mois = np.split(mouton["P"], np.arange(0, 19999, mois))
         liste_mois.pop(0)
@@ -126,14 +127,20 @@ def stabilite(temps, N, nom_fichiers, nombre_fichiers=10):
             b = np.sqrt(np.median(liste_mois[m])**2 - (np.amin(liste_mois[m])-a)**2)
             excentricites[m] = np.sqrt(1-(a**2/b**2))
         if mouton["valide"] is False:
-            stabilite[n] = 0
+            stabilite[n] = np.nan
+            c_init.append(mouton["c_init"])
         else:
             stabilite[n] = 1/np.std(excentricites)
-    return stabilite
+            c_init.append(mouton["c_init"])
+    return stabilite, c_init
 
-print(stabilite(3720, 20000, "TMS_3720_jours_20000_N_x", nombre_fichiers=30))
+#print(mouton_3_corps(0, 24*3600, 5, sys_TMS, F_TMS))
 
-#perturbations(0, 10*12*31*24*3600, 20000, sys_TMS, F_TMS, nombre=30, ordre=1e-6)
+#print(stabilite(3720, 20000, "TMS_3720_jours_20000_N_x", nombre_fichiers=30))
+
+#perturbations(0, 10*12*31*24*3600, 20000, sys_TMS, F_TMS, nombre=30, ordre=1e6)
+
+graph_stab(stabilite(3720, 20000, "TMS_3720_jours_20000_N_x", nombre_fichiers=30))
 
 #anim_3_corps_satellite(0, 100*12*31*24*3600, 2000000, sys_TMS, F_TMS, 6)
 #graph_3_corps(0, 2*12*31*24*3600, 20000, sys_TMS, F_TMS, 0)
