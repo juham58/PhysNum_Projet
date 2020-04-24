@@ -112,10 +112,28 @@ def perturbations(t_i, t_f, N, c_init, F, slice=0, corps=3, var="x", nombre=10, 
 
 
 
+# temps en jours, noms des fichiers sans le dernier chiffre
+def stabilite(temps, N, nom_fichiers, nombre_fichiers=10):
+    stabilite = np.zeros(nombre_fichiers)
+    for n in range(nombre_fichiers):
+        mouton= chargement(nom_fichiers+str(n))
+        mois = int(31*N//temps)
+        liste_mois = np.split(mouton["P"], np.arange(0, 19999, mois))
+        liste_mois.pop(0)
+        excentricites = np.zeros(len(liste_mois))
+        for m in range(len(liste_mois)):
+            a = (np.amax(liste_mois[m])-np.amin(liste_mois[m]))/2
+            b = np.sqrt(np.median(liste_mois[m])**2 - (np.amin(liste_mois[m])-a)**2)
+            excentricites[m] = np.sqrt(1-(a**2/b**2))
+        if mouton["valide"] is False:
+            stabilite[n] = 0
+        else:
+            stabilite[n] = 1/np.std(excentricites)
+    return stabilite
 
+print(stabilite(3720, 20000, "TMS_3720_jours_20000_N_x", nombre_fichiers=30))
 
-
-perturbations(0, 10*12*31*24*3600, 20000, sys_TMS, F_TMS)
+#perturbations(0, 10*12*31*24*3600, 20000, sys_TMS, F_TMS, nombre=30, ordre=1e-6)
 
 #anim_3_corps_satellite(0, 100*12*31*24*3600, 2000000, sys_TMS, F_TMS, 6)
 #graph_3_corps(0, 2*12*31*24*3600, 20000, sys_TMS, F_TMS, 0)

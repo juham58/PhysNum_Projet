@@ -9,6 +9,7 @@ def mouton_3_corps(t_i, t_f, N, c_init, F, slice=0):
     rB_arr = np.zeros((len(t_points), 3))
     rC_arr = np.zeros((len(t_points), 3))
     prox_arr = np.zeros((len(t_points), 1))
+    valide = True
     h = (t_f-t_i)/N
 
     r_Ai, r_Bi, r_Ci = c_init[0][0], c_init[0][1], c_init[0][2]
@@ -80,15 +81,18 @@ def mouton_3_corps(t_i, t_f, N, c_init, F, slice=0):
 
         proximite = np.abs(np.linalg.norm(r_B-r_A))
         prox_arr[i+1][0] = proximite
-        if proximite <= 8993.92*1e3:
-            print("Limite de Roche", t/(24*3600), "jours", "Distance: ", proximite)
+    if prox_arr.any() <= 8993.92*1e3:
+        print("Limite de Roche")
+        valide = False
 
-        if proximite >= 1.47146e9:
-            print("Sphère de Hill: ", t/(24*3600), "jours", "Distance: ", proximite)
+
+    if prox_arr.any() >= 1.47146e9:
+        print("Sphère de Hill: ")
+        valide = False
 
     if slice == 0:
         print("temps exec: ", time.process_time()-t_debut)
-        return {"A": rA_arr, "B": rB_arr, "L": rB_arr-rA_arr, "P": prox_arr, "t": t_points}
+        return {"A": rA_arr, "B": rB_arr, "L": rB_arr-rA_arr, "P": prox_arr, "t": t_points, "valide": valide}
 
     # coupe de moitié les array de résultats un nombre de fois égale à slice
     # permet donc aux animations d'être observées dans un délai raisonnable
@@ -98,7 +102,7 @@ def mouton_3_corps(t_i, t_f, N, c_init, F, slice=0):
         rC_arr = np.delete(rC_arr, np.s_[1::2], 0)
         t_points = np.delete(t_points, np.s_[1::2], 0)
     print("temps exec: ", time.process_time()-t_debut)
-    return {"A": rA_arr, "B": rB_arr, "L": rB_arr-rA_arr, "P": prox_arr, "t": t_points}
+    return {"A": rA_arr, "B": rB_arr, "L": rB_arr-rA_arr, "P": prox_arr, "t": t_points, "valide": valide}
 
 
 def mouton_2_corps(t_i, t_f, N, c_init, F, slice=0):
