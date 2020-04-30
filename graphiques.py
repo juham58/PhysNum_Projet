@@ -60,28 +60,10 @@ def graph_3_corps_3d(t_i, t_f, N, c_init, F):
     ax.plot_surface(r*x, r*y, r*z, linewidth=0.0, cstride=stride, rstride=stride, alpha=0.6, color="black")
     plt.show()
 
-def graph_stab(stab, var="x"):
+def graph_instab(instab, var="x"):
     plt.figure()
-    plt.title("")
-    plt.xlabel("")
-    plt.ylabel("")
-    plt.plot()
+    plt.xlabel("Conndition initiale de {} [m]".format(var))
+    plt.ylabel("Écart type de l'excentricité\nde l'orbite de Mars [-]")
+    plt.plot(instab[1], instab[0])
     plt.grid()
-    if var == "x":
-        plt.plot(stab[:][1][0][1][0], stab[0])
-
-    if var == "y":
-        plt.plot(stab[1][0][1][1], stab[0])
-
-    if var == "z":
-        plt.plot(stab[1][0][1][2], stab[0])
-
-    if var == "vx":
-        plt.plot(stab[1][1][1][0], stab[0])
-
-    if var == "vy":
-        plt.plot(stab[1][1][1][1], stab[0])
-
-    if var == "vz":
-        plt.plot(stab[1][1][1][2], stab[0])
     plt.show()

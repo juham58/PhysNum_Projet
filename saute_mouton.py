@@ -2,7 +2,7 @@ import numpy as np
 import time
 
 
-def mouton_3_corps(t_i, t_f, N, c_init, F, slice=0):
+def mouton_3_corps(t_i, t_f, N, c_init, F, slice=0, var= "x"):
     t_debut = time.process_time()
     t_points = np.linspace(t_i, t_f, N)
     rA_arr = np.zeros((len(t_points), 3))
@@ -12,8 +12,12 @@ def mouton_3_corps(t_i, t_f, N, c_init, F, slice=0):
     valide = True
     h = (t_f-t_i)/N
 
-    r_Ai, r_Bi, r_Ci = c_init[0][0], c_init[0][1], c_init[0][2]
-    v_Ai, v_Bi, v_Ci = c_init[1][0], c_init[1][1], c_init[1][2]
+    r_Ai = np.array([c_init["Terre"]["x"], c_init["Terre"]["y"], c_init["Terre"]["z"]])
+    r_Bi = np.array([c_init["Mars"]["x"], c_init["Mars"]["y"], c_init["Mars"]["z"]])
+    r_Ci = np.array([c_init["Soleil"]["x"], c_init["Soleil"]["y"], c_init["Soleil"]["z"]])
+    v_Ai = np.array([c_init["Terre"]["vx"], c_init["Terre"]["vy"], c_init["Terre"]["vz"]])
+    v_Bi = np.array([c_init["Mars"]["vx"], c_init["Mars"]["vy"], c_init["Mars"]["vz"]])
+    v_Ci = np.array([c_init["Soleil"]["vx"], c_init["Soleil"]["vy"], c_init["Soleil"]["vz"]])
 
     # calcul du point v(t+h/2) avec Runge-Kutta d'ordre 4
     k1_A_v = 0.5*h*F("A", r_Ai, r_Bi, r_Ci)
@@ -92,7 +96,7 @@ def mouton_3_corps(t_i, t_f, N, c_init, F, slice=0):
 
     if slice == 0:
         print("temps exec: ", time.process_time()-t_debut)
-        return {"A": rA_arr, "B": rB_arr, "L": rB_arr-rA_arr, "P": prox_arr, "t": t_points, "valide": valide, "c_init": c_init}
+        return {"A": rA_arr, "B": rB_arr, "L": rB_arr-rA_arr, "P": prox_arr, "t": t_points, "valide": valide, "c_init": c_init, "var": var}
 
     # coupe de moitié les array de résultats un nombre de fois égale à slice
     # permet donc aux animations d'être observées dans un délai raisonnable
@@ -103,7 +107,7 @@ def mouton_3_corps(t_i, t_f, N, c_init, F, slice=0):
         t_points = np.delete(t_points, np.s_[1::2], 0)
         prox_arr = np.delete(prox_arr, np.s_[1::2], 0)
     print("temps exec: ", time.process_time()-t_debut)
-    return {"A": rA_arr, "B": rB_arr, "L": rB_arr-rA_arr, "P": prox_arr, "t": t_points, "valide": valide, "c_init": c_init}
+    return {"A": rA_arr, "B": rB_arr, "L": rB_arr-rA_arr, "P": prox_arr, "t": t_points, "valide": valide, "c_init": c_init, "var": var}
 
 
 def mouton_2_corps(t_i, t_f, N, c_init, F, slice=0):
