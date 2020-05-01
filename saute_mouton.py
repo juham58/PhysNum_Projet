@@ -91,11 +91,11 @@ def mouton_3_corps(t_i, t_f, N, c_init, F, slice=0, var= "x"):
         if proximite >= 1.47146e9:
             valide = False
 
-    if valide is False:
-        print("Orbite instable")
+    #if valide is False:
+        #print("Orbite instable")
 
     if slice == 0:
-        print("temps exec: ", time.process_time()-t_debut)
+        #print("temps exec: ", time.process_time()-t_debut)
         return {"A": rA_arr, "B": rB_arr, "L": rB_arr-rA_arr, "P": prox_arr, "t": t_points, "valide": valide, "c_init": c_init, "var": var}
 
     # coupe de moitié les array de résultats un nombre de fois égale à slice
@@ -106,7 +106,7 @@ def mouton_3_corps(t_i, t_f, N, c_init, F, slice=0, var= "x"):
         rC_arr = np.delete(rC_arr, np.s_[1::2], 0)
         t_points = np.delete(t_points, np.s_[1::2], 0)
         prox_arr = np.delete(prox_arr, np.s_[1::2], 0)
-    print("temps exec: ", time.process_time()-t_debut)
+    #print("temps exec: ", time.process_time()-t_debut)
     return {"A": rA_arr, "B": rB_arr, "L": rB_arr-rA_arr, "P": prox_arr, "t": t_points, "valide": valide, "c_init": c_init, "var": var}
 
 

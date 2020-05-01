@@ -1,10 +1,10 @@
 import numpy as np
 import pickle
 from pathlib import Path
-from graphiques import graph_3_corps, graph_instab
+from graphiques import graph_3_corps, graph_stab
 from anims import anim_2_corps_satellite, anim_3_corps_satellite
 from saute_mouton import mouton_2_corps, mouton_3_corps
-np.set_printoptions(threshold=np.inf)
+np.set_printoptions(threshold=20)
 
 # définition de la constante gravitationnelle
 G = 6.67408*1e-11
@@ -33,6 +33,14 @@ sys_TMS = {"Terre": {"x": 0.0, "y": 0.0, "z": 0.0,
                       "vx": -1.532817776260213e4, "vy": 2.537026724877958e4, "vz": -7.731597224385212e1}}
 
 
+#sys_TMS = {"Terre": {"x": 0.0, "y": 0.0, "z": 0.0,
+#                     "vx": 0.0, "vy": 0.0, "vz": 0.0},
+#           "Mars": {"x": 4.27961*1e8, "y": 1.54219*1e8, "z": -3.377555728461962*1e7,
+#                    "vx": -3.394644560073193*1e2, "vy": 9.107875634231341*1e2, "vz": 2.924258406161673*1e1},
+#           "Soleil": {"x": 1.274562537709166e11, "y": 7.981279122934923e10, "z": -4.406210892602801*1e6,
+#                      "vx": -1.532817776260213e4, "vy": 2.537026724877958e4, "vz": -7.731597224385212e1}}
+
+
 def F_TM(corps, r_A, r_B):
     if corps == "A":
         return -G*(m_M*((r_A-r_B)/(np.linalg.norm(r_A-r_B)**3)))
@@ -59,6 +67,7 @@ def sauvegarde(t_i, t_f, N, c_init, F, slice=0, var="x", id=0):
     mouton = mouton_3_corps(t_i, t_f, N, c_init, F, slice, var)
     nom_fichier = "TMS_{}_jours_{}_N_{}{}".format(round(t_f/(24*3600)), N, var, id)
     pickle.dump(mouton, open(str(Path.cwd()/"Données"/nom_fichier), "w+b"))
+    return mouton
 
 
 def chargement(nom_fichier):
@@ -70,20 +79,28 @@ def chargement(nom_fichier):
 # sur une condition initiales var et enregistre les données
 def perturbations(t_i, t_f, N, c_init, F, slice=0, var="x", nombre=10, ordre=1e7):
     c_init["Mars"][var] = c_init["Mars"][var] - (nombre/2)*ordre
+    orbites_stables = 0
     for i in range(nombre):
         c_init["Mars"][var] = c_init["Mars"][var] + i*ordre
-        sauvegarde(t_i, t_f, N, c_init, F, slice, var, id=i)
+        data = sauvegarde(t_i, t_f, N, c_init, F, slice, var, id=i)
+        if data["valide"] is True:
+            orbites_stables += 1
+
+        if data["valide"] is False and orbites_stables > 15:
+            return i
+    return nombre
+
 
 
 
 # temps en jours, noms des fichiers sans le dernier chiffre
-def instabilite(temps, N, nom_fichiers, var="x", nombre_fichiers=10):
-    instabilite = np.zeros(nombre_fichiers)
+def stabilite(temps, N, nom_fichiers, var="x", nombre_fichiers=10):
+    stabilite = np.zeros(nombre_fichiers)
     c_init = []
     for n in range(nombre_fichiers):
         mouton = chargement(nom_fichiers+str(n))
         mois = int(31*N//temps)
-        liste_mois = np.split(mouton["P"], np.arange(0, 19999, mois))
+        liste_mois = np.split(mouton["P"], np.arange(0, N-1, mois))
         liste_mois.pop(0)
         excentricites = np.zeros(len(liste_mois))
         for m in range(len(liste_mois)):
@@ -91,20 +108,63 @@ def instabilite(temps, N, nom_fichiers, var="x", nombre_fichiers=10):
             b = np.sqrt(np.median(liste_mois[m])**2 - (np.amin(liste_mois[m])-a)**2)
             excentricites[m] = np.sqrt(1-(a**2/b**2))
         if mouton["valide"] is False:
-            instabilite[n] = np.nan
+            stabilite[n] = np.nan
             c_init.append(mouton["c_init"]["Mars"][var])
         else:
-            instabilite[n] = np.std(excentricites)
+            stabilite[n] = 1/np.std(excentricites)
             c_init.append(mouton["c_init"]["Mars"][var])
-    return instabilite, c_init
+    return stabilite, c_init
+
+
+def recherche_stab(t_i, t_f, N, c_init, F, slice=0, var="x", nombre=10, ordre=1e7):
+    temps = round((t_f-t_i)/(24*3600))
+    nombre_fichiers = nombre
+    nombre_x, nombre_y = nombre, nombre
+    delta_x, delta_y = np.inf, np.inf
+    while delta_x >= 1e4 or delta_y >= 1e4:
+        var = "x"
+        nom_fichiers = "TMS_{}_jours_{}_N_{}".format(temps, N, var)
+        c_init_x = c_init["Mars"]["x"]
+        nombre_fichiers_x = perturbations(t_i, t_f, N, c_init, F, slice, var="x", nombre=nombre_x, ordre=ordre)
+        stab_data_x = stabilite(temps, N, nom_fichiers, var="x", nombre_fichiers=nombre_fichiers_x)
+        graph_stab(stab_data_x, var="x")
+        stab_x = list(stab_data_x[0])
+        cond_x = list(stab_data_x[1])
+        index_x = stab_x.index(max(stab_x))
+        c_init["Mars"]["x"] = cond_x[index_x]
+
+        delta_x = np.abs(c_init_x - c_init["Mars"]["x"])
+        c_init_x = c_init["Mars"]["x"]
+        nombre_x = int(round(1.61803398875*2*delta_x//ordre))
+        print("-------\n", "delta_x: ", delta_x, " max: ", cond_x[index_x], "\n-------")
+
+        var = "y"
+        nom_fichiers = "TMS_{}_jours_{}_N_{}".format(temps, N, var)
+        c_init_y = c_init["Mars"]["y"]
+        nombre_fichiers_y = perturbations(t_i, t_f, N, c_init, F, slice, var="y", nombre=nombre_y, ordre=ordre)
+        stab_data_y = stabilite(temps, N, nom_fichiers, var="y", nombre_fichiers=nombre_fichiers_y)
+        graph_stab(stab_data_y, var="y")
+        stab_y = list(stab_data_y[0])
+        cond_y = list(stab_data_y[1])
+        index_y = stab_y.index(max(stab_y))
+        c_init["Mars"]["y"] = cond_y[index_y]
+
+        delta_y = np.abs(c_init_y - c_init["Mars"]["y"])
+        c_init_y = c_init["Mars"]["y"]
+        nombre_y = int(round(1.61803398875*2*delta_y//ordre))
+        print("-------\n", "delta_y: ", delta_y, " max: ", cond_y[index_y], "\n-------")
+    print(c_init, nom_fichiers, nombre_fichiers_y)
+    pickle.dump(mouton, open(str(Path.cwd()/"Données"/"c_init"/nom_fichiers), "w+b"))
+    return c_init
+
+graph_3_corps(0, 100*12*31*24*3600, 200000, {'Terre': {'x': 0.0, 'y': 0.0, 'z': 0.0, 'vx': 0.0, 'vy': 0.0, 'vz': 0.0}, 'Mars': {'x': 446403216.1666349, 'y': 162426642.84728882, 'z': -33775557.28461962, 'vx': -339.4644560073193, 'vy': 910.7875634231341, 'vz': 29.242584061616732}, 'Soleil': {'x': 127456253770.9166, 'y': 79812791229.34923, 'z': -4406210.892602801, 'vx': -15328.17776260213, 'vy': 25370.26724877958, 'vz': -77.31597224385212}}, F_TMS, slice=0)
 
 #print(mouton_3_corps(0, 24*3600, 5, sys_TMS, F_TMS))
 
-#print(instabilite(3720, 20000, "TMS_3720_jours_20000_N_x", nombre_fichiers=30))
+#print(stabilite(3720, 20000, "TMS_3720_jours_20000_N_x", nombre_fichiers=30))
+#recherche_stab(0, 12*31*24*3600, 2000, sys_TMS, F_TMS, var="x", nombre=43000, ordre=1e3)
 
-perturbations(0, 12*12*31*24*3600, 200000, sys_TMS, F_TMS, nombre=100, ordre=1e5)
-
-graph_instab(instabilite(4464, 200000, "TMS_4464_jours_20000_N_x", nombre_fichiers=100))
+#graph_stab(stabilite(372, 2000, "TMS_372_jours_2000_N_x", var="x", nombre_fichiers=278))
 
 #anim_3_corps_satellite(0, 100*12*31*24*3600, 2000000, sys_TMS, F_TMS, 6)
 #graph_3_corps(0, 2*12*31*24*3600, 20000, sys_TMS, F_TMS, 0)

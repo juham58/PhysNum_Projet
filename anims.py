@@ -56,7 +56,7 @@ def anim_3_corps_satellite(t_i, t_f, N, c_init, F, slice):
     fig, ax = plt.subplots()
     ax.set(xlim=(-4e8, 4e8), ylim=(-4e8, 4e8))
 
-    ligne_S, = ax.plot(c_init[0][1][0], c_init[0][1][1], 'r--', linewidth=0.5, label="Satellite", zorder=3)
+    ligne_S, = ax.plot(c_init["Mars"]["x"], c_init["Mars"]["y"], 'r--', linewidth=0.5, label="Satellite", zorder=3)
     cercle = plt.Circle((0, 0), radius=1993920, alpha=0.95, zorder=10, color="maroon")
     ax.add_patch(cercle)
 
