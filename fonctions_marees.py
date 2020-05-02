@@ -1,30 +1,29 @@
 import numpy as np
 
 
+r = 6371000.0
 # V_dl seulement en fonction de la position de la lune
-def V_dl(x_l, y_l, z_l):
-    return np.arctan(z_l/np.arctan(y_l/x_l))
-
-
-# Phi_P, attention, ce sont des variables flotantes, car on évalue sur un linspace toutes les valeurs de P
-def P_phi(x, y, z):
-    return np.arctan(z/np.arctan(y/x))
+def V_dl(R_l, z_l):
+    a = np.arcsin(z_l/R_l)
+    print(a)
+    return a
 
 
 # Cp en fonction de la position des points V et P
-def Cp(Vx, Vy, Px, Py):
-    return np.arctan((Py/Px - Vy/Vx)/(1 + (Py/Px)*(Vy/Vx)))
+def Cp(x_l, y_l, theta_p):
+    return theta_p - np.arctan(y_l/x_l)
 
 
 # distance R entre les 2 astres
 def R_l(x_l,y_l,z_l):
-    return np.sqrt(x_l**2 + y_l**2 + z_l**2)
+    a = np.sqrt(x_l**2 + y_l**2 + z_l**2)
+    print(a)
+    return a
 
 
 # C_0(t) calculé
-def C_0(R_astres, d_l):
-    r = 6371000.0
-    return (r/R_astres)**3.0 * (1.5)*np.sin(d_l)**2.0 - 0.5
+def C_0(R_astre, d_l):
+    return (r/R_astre)**3.0 * ((1.5)*np.sin(d_l)**2.0 - 0.5)
 
 
 # C_1(t) calculé
@@ -38,13 +37,25 @@ def C_2(R_astres, d_l, C_p):
 
 
 # fonction équilibrium tide
-def Equilibrium(x_l, y_l, z_l, fct_0, fct_1, fct_2, phi_p, masse_astre):
-    r = 6371000.0
+def Equilibrium(x_l, y_l, z_l, masse_astre, theta, delta):
     m_e = 5.9722e24
     Cte = r*masse_astre/m_e
-    C_0 = fct_0(R_l(x_l, y_l, z_l), V_dl(x_l, y_l, z_l))
-    C_1 = fct_1(R_l(x_l, y_l, z_l), V_dl(x_l, y_l, z_l), )
-    return
+    R = R_l(x_l, y_l, z_l)
+    d_l = V_dl(R, z_l)
+    C0 = C_0(R, d_l)
+    print(C0)
+    C_p = Cp(x_l, y_l, theta)
+    C1 = C_1(R, d_l, C_p)
+    print(C1)
+    C2 = C_2(R, d_l, C_p)
+    print(C2)
+    return Cte*(C0*(1.5*np.sin(delta)**2.0 - 0.5) + C1*np.sin(2*delta) + C2*np.cos(delta)**2)
 
 
-
+x_l = 384400000.0
+y_l = 235828.00
+z_l = 492358.0
+theta = 0.213
+delta = 0.012
+a = Equilibrium(x_l, y_l, z_l, 6.4185e23, theta, delta)
+print(a)
