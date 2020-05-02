@@ -48,7 +48,7 @@ def F_TM(corps, r_A, r_B):
     if corps == "B":
         return -G*(m_T*((r_B-r_A)/(np.linalg.norm(r_B-r_A)**3)))
 
-
+# force sur la Terre, Mars et Soleil
 def F_TMS(corps, r_A, r_B, r_C):
     if corps == "A":
         return -G*(m_M*((r_A-r_B)/(np.linalg.norm(r_A-r_B)**3))
@@ -63,6 +63,7 @@ def F_TMS(corps, r_A, r_B, r_C):
                    + m_M*((r_C-r_B)/(np.linalg.norm(r_C-r_B)**3)))
 
 
+# Sauvegarde les données produites par la fonction mouton_3_corps
 def sauvegarde(t_i, t_f, N, c_init, F, slice=0, var="x", id=0):
     mouton = mouton_3_corps(t_i, t_f, N, c_init, F, slice, var)
     nom_fichier = "TMS_{}_jours_{}_N_{}{}".format(round(t_f/(24*3600)), N, var, id)
@@ -70,6 +71,8 @@ def sauvegarde(t_i, t_f, N, c_init, F, slice=0, var="x", id=0):
     return mouton
 
 
+# charge les données produites par la fonction mouton_3_corps
+# préalablement sauvegardées par la fonction sauvegarde
 def chargement(nom_fichier):
     data = pickle.load(open(str(Path.cwd()/"Données"/str(nom_fichier)), "rb"))
     return data
@@ -92,7 +95,7 @@ def perturbations(t_i, t_f, N, c_init, F, slice=0, var="x", nombre=10, ordre=1e7
 
 
 
-
+# calcul la stabilité d'un orbite en trouvant l'écart type de l'excentricité
 # temps en jours, noms des fichiers sans le dernier chiffre
 def stabilite(temps, N, nom_fichiers, var="x", nombre_fichiers=10):
     stabilite = np.zeros(nombre_fichiers)
@@ -116,18 +119,23 @@ def stabilite(temps, N, nom_fichiers, var="x", nombre_fichiers=10):
     return stabilite, c_init
 
 
+# algorithme adaptatif permettant de trouver les conditions initiales en x et y
+# qui créent un orbite stable
+# en utilisant les fonctions perturbations et stabilite
 def recherche_stab(t_i, t_f, N, c_init, F, slice=0, var="x", nombre=10, ordre=1e7):
     temps = round((t_f-t_i)/(24*3600))
     nombre_fichiers = nombre
     nombre_x, nombre_y = nombre, nombre
     delta_x, delta_y = np.inf, np.inf
     while delta_x >= 1e4 or delta_y >= 1e4:
+
+        #stabilité en x
         var = "x"
         nom_fichiers = "TMS_{}_jours_{}_N_{}".format(temps, N, var)
         c_init_x = c_init["Mars"]["x"]
         nombre_fichiers_x = perturbations(t_i, t_f, N, c_init, F, slice, var="x", nombre=nombre_x, ordre=ordre)
         stab_data_x = stabilite(temps, N, nom_fichiers, var="x", nombre_fichiers=nombre_fichiers_x)
-        graph_stab(stab_data_x, var="x")
+        #graph_stab(stab_data_x, var="x")
         stab_x = list(stab_data_x[0])
         cond_x = list(stab_data_x[1])
         index_x = stab_x.index(max(stab_x))
@@ -138,12 +146,13 @@ def recherche_stab(t_i, t_f, N, c_init, F, slice=0, var="x", nombre=10, ordre=1e
         nombre_x = int(round(1.61803398875*2*delta_x//ordre))
         print("-------\n", "delta_x: ", delta_x, " max: ", cond_x[index_x], "\n-------")
 
+        # stabilité en y
         var = "y"
         nom_fichiers = "TMS_{}_jours_{}_N_{}".format(temps, N, var)
         c_init_y = c_init["Mars"]["y"]
         nombre_fichiers_y = perturbations(t_i, t_f, N, c_init, F, slice, var="y", nombre=nombre_y, ordre=ordre)
         stab_data_y = stabilite(temps, N, nom_fichiers, var="y", nombre_fichiers=nombre_fichiers_y)
-        graph_stab(stab_data_y, var="y")
+        #graph_stab(stab_data_y, var="y")
         stab_y = list(stab_data_y[0])
         cond_y = list(stab_data_y[1])
         index_y = stab_y.index(max(stab_y))
@@ -153,12 +162,13 @@ def recherche_stab(t_i, t_f, N, c_init, F, slice=0, var="x", nombre=10, ordre=1e
         c_init_y = c_init["Mars"]["y"]
         nombre_y = int(round(1.61803398875*2*delta_y//ordre))
         print("-------\n", "delta_y: ", delta_y, " max: ", cond_y[index_y], "\n-------")
+
     print(c_init, nom_fichiers, nombre_fichiers_y)
     pickle.dump(mouton, open(str(Path.cwd()/"Données"/"c_init"/nom_fichiers), "w+b"))
     return c_init
 
-graph_3_corps(0, 100*12*31*24*3600, 200000, {'Terre': {'x': 0.0, 'y': 0.0, 'z': 0.0, 'vx': 0.0, 'vy': 0.0, 'vz': 0.0}, 'Mars': {'x': 446403216.1666349, 'y': 162426642.84728882, 'z': -33775557.28461962, 'vx': -339.4644560073193, 'vy': 910.7875634231341, 'vz': 29.242584061616732}, 'Soleil': {'x': 127456253770.9166, 'y': 79812791229.34923, 'z': -4406210.892602801, 'vx': -15328.17776260213, 'vy': 25370.26724877958, 'vz': -77.31597224385212}}, F_TMS, slice=0)
 
+#chargement("TMS_372_jours_30000_N_x0")
 #print(mouton_3_corps(0, 24*3600, 5, sys_TMS, F_TMS))
 
 #print(stabilite(3720, 20000, "TMS_3720_jours_20000_N_x", nombre_fichiers=30))
