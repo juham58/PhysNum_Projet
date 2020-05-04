@@ -1,6 +1,7 @@
 import pyvista as pv
 import numpy as np
 from Grid_2D_Equilibrium import grid_fct, fonc_Equilibrium
+import mpl_toolkits
 
 def _cell_bounds(points, bound_position=0.5):
     """
@@ -64,8 +65,23 @@ grid_scalar = pv.grid_from_sph_coords(xx_bounds, yy_bounds, levels)
 # And fill its cell arrays with the scalar data
 grid_scalar.cell_arrays["Hauteur de la marée (mètres)"] = np.array(Grid_equilibrium[2]).swapaxes(-2, -1).ravel("C")
 
+
+def points(lon, lat):
+    R = RADIUS
+    return np.array([1.01*R*np.cos(lat)*np.cos(lon), 1.01*R*np.cos(lat)*np.sin(lon), 1.01*R*np.sin(lat)])
+
+label = ["Québec", "Paris", "Tokyo", "Brasilia"]
+Quebec = points(-1.2428137, 0.8170563)
+Paris = points(0.0409942, 0.85265268)
+Tokyo = points(2.440659, 0.622259)
+Brasilia = points(-0.8365314, -0.2754080)
+
+Points_array = np.vstack((Quebec, Paris, Tokyo, Brasilia))
+
 # Make a plot
 p = pv.Plotter()
-# p.add_mesh(pv.Sphere(radius=RADIUS))
-p.add_mesh(grid_scalar, clim=[-2.00, 3.50], opacity=1.0, cmap="plasma")
+p.add_mesh(pv.Sphere(radius=RADIUS), color="white", style="surface")
+p.show_bounds()
+p.add_point_labels(Points_array, label)
+p.add_mesh(grid_scalar, clim=[-2.00, 3.50], opacity=0.9, cmap="cividis")
 p.show()
