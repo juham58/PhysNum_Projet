@@ -2,7 +2,7 @@ import numpy as np
 import time
 
 
-def mouton_3_corps(t_i, t_f, N, c_init, F, slice=0, var= "x"):
+def mouton_3_corps(t_i, t_f, N, c_init, F, slice=0, var= "x", tol_valide=True, verbose=False):
     t_debut = time.process_time()
     t_points = np.linspace(t_i, t_f, N)
     rA_arr = np.zeros((len(t_points), 3))
@@ -91,12 +91,16 @@ def mouton_3_corps(t_i, t_f, N, c_init, F, slice=0, var= "x"):
         if proximite >= 1.47146e9:
             valide = False
 
+        if tol_valide is False and valide is False:
+            break
+
     #if valide is False:
         #print("Orbite instable")
 
     if slice == 0:
-        #print("temps exec: ", time.process_time()-t_debut)
-        return {"A": rA_arr, "B": rB_arr, "L": rB_arr-rA_arr, "P": prox_arr, "t": t_points, "valide": valide, "c_init": c_init, "var": var}
+        if verbose is True:
+            print("temps exec: ", time.process_time()-t_debut)
+        return {"A": rA_arr, "B": rB_arr, "L": rB_arr-rA_arr, "S": rC_arr-rA_arr, "P": prox_arr, "t": t_points, "valide": valide, "c_init": c_init, "var": var}
 
     # coupe de moitié les array de résultats un nombre de fois égale à slice
     # permet donc aux animations d'être observées dans un délai raisonnable
@@ -106,8 +110,9 @@ def mouton_3_corps(t_i, t_f, N, c_init, F, slice=0, var= "x"):
         rC_arr = np.delete(rC_arr, np.s_[1::2], 0)
         t_points = np.delete(t_points, np.s_[1::2], 0)
         prox_arr = np.delete(prox_arr, np.s_[1::2], 0)
-    #print("temps exec: ", time.process_time()-t_debut)
-    return {"A": rA_arr, "B": rB_arr, "L": rB_arr-rA_arr, "P": prox_arr, "t": t_points, "valide": valide, "c_init": c_init, "var": var}
+    if verbose is True:
+        print("temps exec: ", time.process_time()-t_debut)
+    return {"A": rA_arr, "B": rB_arr, "L": rB_arr-rA_arr, "S": rC_arr-rA_arr, "P": prox_arr, "t": t_points, "valide": valide, "c_init": c_init, "var": var}
 
 
 def mouton_2_corps(t_i, t_f, N, c_init, F, slice=0):

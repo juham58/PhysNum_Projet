@@ -1,10 +1,11 @@
 import numpy as np
 import pickle
 from pathlib import Path
-from graphiques import graph_3_corps, graph_stab
+from scipy.constants import golden_ratio
+from graphiques import graph_3_corps, graph_stab, graph_proximite
 from anims import anim_2_corps_satellite, anim_3_corps_satellite
 from saute_mouton import mouton_2_corps, mouton_3_corps
-np.set_printoptions(threshold=20)
+np.set_printoptions(threshold=np.inf)
 
 # définition de la constante gravitationnelle
 G = 6.67408*1e-11
@@ -63,8 +64,22 @@ def F_TMS(corps, r_A, r_B, r_C):
                    + m_M*((r_C-r_B)/(np.linalg.norm(r_C-r_B)**3)))
 
 
+def F_TLS(corps, r_A, r_B, r_C):
+    if corps == "A":
+        return -G*(m_L*((r_A-r_B)/(np.linalg.norm(r_A-r_B)**3))
+                   + m_S*((r_A-r_C)/(np.linalg.norm(r_A-r_C)**3)))
+
+    if corps == "B":
+        return -G*(m_T*((r_B-r_A)/(np.linalg.norm(r_B-r_A)**3))
+                   + m_S*((r_B-r_C)/(np.linalg.norm(r_B-r_C)**3)))
+
+    if corps == "C":
+        return -G*(m_T*((r_C-r_A)/(np.linalg.norm(r_C-r_A)**3))
+                   + m_L*((r_C-r_B)/(np.linalg.norm(r_C-r_B)**3)))
+
+
 # Sauvegarde les données produites par la fonction mouton_3_corps
-def sauvegarde(t_i, t_f, N, c_init, F, slice=0, var="x", id=0):
+def sauvegarde(t_i, t_f, N, c_init, F, slice=0, var="x", tol_valide=True, id=0):
     mouton = mouton_3_corps(t_i, t_f, N, c_init, F, slice, var)
     nom_fichier = "TMS_{}_jours_{}_N_{}{}".format(round(t_f/(24*3600)), N, var, id)
     pickle.dump(mouton, open(str(Path.cwd()/"Données"/nom_fichier), "w+b"))
@@ -85,7 +100,7 @@ def perturbations(t_i, t_f, N, c_init, F, slice=0, var="x", nombre=10, ordre=1e7
     orbites_stables = 0
     for i in range(nombre):
         c_init["Mars"][var] = c_init["Mars"][var] + i*ordre
-        data = sauvegarde(t_i, t_f, N, c_init, F, slice, var, id=i)
+        data = sauvegarde(t_i, t_f, N, c_init, F, slice, var, tol_valide=False, id=i)
         if data["valide"] is True:
             orbites_stables += 1
 
@@ -116,13 +131,14 @@ def stabilite(temps, N, nom_fichiers, var="x", nombre_fichiers=10):
         else:
             stabilite[n] = 1/np.std(excentricites)
             c_init.append(mouton["c_init"]["Mars"][var])
+    #print(len(stabilite))
     return stabilite, c_init
 
 
 # algorithme adaptatif permettant de trouver les conditions initiales en x et y
 # qui créent un orbite stable
 # en utilisant les fonctions perturbations et stabilite
-def recherche_stab(t_i, t_f, N, c_init, F, slice=0, var="x", nombre=10, ordre=1e7):
+def recherche_stab(t_i, t_f, N, c_init, F, slice=0, nombre=10, ordre=1e7):
     temps = round((t_f-t_i)/(24*3600))
     nombre_fichiers = nombre
     nombre_x, nombre_y = nombre, nombre
@@ -135,7 +151,7 @@ def recherche_stab(t_i, t_f, N, c_init, F, slice=0, var="x", nombre=10, ordre=1e
         c_init_x = c_init["Mars"]["x"]
         nombre_fichiers_x = perturbations(t_i, t_f, N, c_init, F, slice, var="x", nombre=nombre_x, ordre=ordre)
         stab_data_x = stabilite(temps, N, nom_fichiers, var="x", nombre_fichiers=nombre_fichiers_x)
-        #graph_stab(stab_data_x, var="x")
+        graph_stab(stab_data_x, var="x")
         stab_x = list(stab_data_x[0])
         cond_x = list(stab_data_x[1])
         index_x = stab_x.index(max(stab_x))
@@ -143,7 +159,7 @@ def recherche_stab(t_i, t_f, N, c_init, F, slice=0, var="x", nombre=10, ordre=1e
 
         delta_x = np.abs(c_init_x - c_init["Mars"]["x"])
         c_init_x = c_init["Mars"]["x"]
-        nombre_x = int(round(1.61803398875*2*delta_x//ordre))
+        nombre_x = int(round(golden_ratio*2*delta_x//ordre))
         print("-------\n", "delta_x: ", delta_x, " max: ", cond_x[index_x], "\n-------")
 
         # stabilité en y
@@ -160,21 +176,23 @@ def recherche_stab(t_i, t_f, N, c_init, F, slice=0, var="x", nombre=10, ordre=1e
 
         delta_y = np.abs(c_init_y - c_init["Mars"]["y"])
         c_init_y = c_init["Mars"]["y"]
-        nombre_y = int(round(1.61803398875*2*delta_y//ordre))
+        nombre_y = int(round(golden_ratio*2*delta_y//ordre))
         print("-------\n", "delta_y: ", delta_y, " max: ", cond_y[index_y], "\n-------")
 
     print(c_init, nom_fichiers, nombre_fichiers_y)
-    pickle.dump(mouton, open(str(Path.cwd()/"Données"/"c_init"/nom_fichiers), "w+b"))
+    pickle.dump(c_init, open(str(Path.cwd()/"Données"/"c_init"/nom_fichiers), "w+b"))
     return c_init
 
-
+#anim_3_corps_satellite(0, 10*12*31*24*3600, 20000, sys_TMS, F_TMS, 6)
 #chargement("TMS_372_jours_30000_N_x0")
 #print(mouton_3_corps(0, 24*3600, 5, sys_TMS, F_TMS))
 
 #print(stabilite(3720, 20000, "TMS_3720_jours_20000_N_x", nombre_fichiers=30))
-#recherche_stab(0, 12*31*24*3600, 2000, sys_TMS, F_TMS, var="x", nombre=43000, ordre=1e3)
+recherche_stab(0, 3*12*31*24*3600, 6000, sys_TMS, F_TMS, nombre=43000, ordre=1e3)
 
-#graph_stab(stabilite(372, 2000, "TMS_372_jours_2000_N_x", var="x", nombre_fichiers=278))
+#perturbations(0, 12*31*24*3600, 2000, sys_TMS, F_TMS, nombre=4000, ordre=1e4)
+#graph_stab(stabilite(2*31, 4000, "TMS_744_jours_4000_N_x", var="x", nombre_fichiers=180))
 
 #anim_3_corps_satellite(0, 100*12*31*24*3600, 2000000, sys_TMS, F_TMS, 6)
-#graph_3_corps(0, 2*12*31*24*3600, 20000, sys_TMS, F_TMS, 0)
+#graph_3_corps(0, 27.322*24*3600, 2000, sys_TMS, F_TLS, 0)
+#graph_proximite(0, 12*31*24*3600, 20000, sys_TMS, F_TMS, 0)
