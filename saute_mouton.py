@@ -191,3 +191,51 @@ def mouton_2_corps(t_i, t_f, N, c_init, F, slice=0):
 
     print("temps exec: ", time.process_time()-t_debut)
     return {"A": rA_arr, "B": rB_arr, "L": rB_arr-rA_arr, "t": t_points}
+
+
+sys_TMS = {"Terre": {"x": 0.0, "y": 0.0, "z": 0.0,
+                     "vx": 0.0, "vy": 0.0, "vz": 0.0},
+           "Mars": {"x": 3.801612161666349*1e8, "y": 1.382096428472888*1e8, "z": -3.377555728461962*1e7,
+                    "vx": -3.394644560073193*1e2, "vy": 9.107875634231341*1e2, "vz": 2.924258406161673*1e1},
+           "Soleil": {"x": 1.274562537709166e11, "y": 7.981279122934923e10, "z": -4.406210892602801*1e6,
+                      "vx": -1.532817776260213e4, "vy": 2.537026724877958e4, "vz": -7.731597224385212e1}}
+
+
+def F_TMS(corps, r_A, r_B, r_C):
+    if corps == "A":
+        return -G*(m_M*((r_A-r_B)/(np.linalg.norm(r_A-r_B)**3))
+                   + m_S*((r_A-r_C)/(np.linalg.norm(r_A-r_C)**3)))
+
+    if corps == "B":
+        return -G*(m_T*((r_B-r_A)/(np.linalg.norm(r_B-r_A)**3))
+                   + m_S*((r_B-r_C)/(np.linalg.norm(r_B-r_C)**3)))
+
+    if corps == "C":
+        return -G*(m_T*((r_C-r_A)/(np.linalg.norm(r_C-r_A)**3))
+                   + m_M*((r_C-r_B)/(np.linalg.norm(r_C-r_B)**3)))
+
+
+def F_TLS(corps, r_A, r_B, r_C):
+    # définition de la constante gravitationnelle
+    G = 6.674081e-11
+    if corps == "A":
+        return -G*(m_L*((r_A-r_B)/(np.linalg.norm(r_A-r_B)**3))
+                   + m_S*((r_A-r_C)/(np.linalg.norm(r_A-r_C)**3)))
+
+    if corps == "B":
+        return -G*(m_T*((r_B-r_A)/(np.linalg.norm(r_B-r_A)**3))
+                   + m_S*((r_B-r_C)/(np.linalg.norm(r_B-r_C)**3)))
+
+    if corps == "C":
+        return -G*(m_T*((r_C-r_A)/(np.linalg.norm(r_C-r_A)**3))
+                   + m_L*((r_C-r_B)/(np.linalg.norm(r_C-r_B)**3)))
+
+# définition de la constante gravitationnelle
+G = 6.67408*1e-11
+
+
+# définition des masses (kg)
+m_T = 5.9722*1e24  # Terre
+m_S = 1.989*1e30  # Soleil
+m_L = 7.349*1e22  # Lune
+m_M = 0.107*m_T  # Mars
