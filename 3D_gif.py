@@ -20,8 +20,8 @@ def _cell_bounds(points, bound_position=0.1):
 
 
 RADIUS = 6371.0
-x = np.linspace(-180.0, 180.0, 50)
-y = np.linspace(-90, 91, 50)
+x = np.linspace(-180.0, 180.0, 200)
+y = np.linspace(-90, 91, 200)
 y_polar = 90.0 - y
 
 
@@ -31,9 +31,9 @@ yy_bounds = _cell_bounds(y_polar)
 levels = [RADIUS * 1.01]
 
 
-positions_mars = mouton_3_corps(0, 31 * 24 * 3600, 2000, sys_TMS, F_TMS, slice=6)
-positions_lune = mouton_3_corps(0, 31 * 24 * 3600, 2000, sys_TMS, F_TLS, slice=6)
-a = grid_mouton(50, Equilibrium, positions_mars, m_M)
+positions_mars = mouton_3_corps(0, 31 * 24 * 3600, 2000, sys_TMS, F_TMS, slice=4)
+positions_lune = mouton_3_corps(0, 31 * 24 * 3600, 2000, sys_TMS, F_TLS, slice=4)
+a = grid_mouton(200, Equilibrium, positions_mars, m_M)
 
 # Remplir la grille de valeurs scalaires
 grid_scalar = pv.grid_from_sph_coords(xx_bounds, yy_bounds, levels)
