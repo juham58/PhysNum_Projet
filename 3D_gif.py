@@ -31,9 +31,10 @@ yy_bounds = _cell_bounds(y_polar)
 levels = [RADIUS * 1.01]
 
 
-positions_mars = mouton_3_corps(0, 31 * 24 * 3600, 2000, sys_TMS, F_TMS, slice=4)
-positions_lune = mouton_3_corps(0, 31 * 24 * 3600, 2000, sys_TMS, F_TLS, slice=4)
+positions_mars = mouton_3_corps(0, 14 * 24 * 3600, 2000, sys_TMS, F_TMS, slice=2)
+positions_lune = mouton_3_corps(0, 14 * 24 * 3600, 2000, sys_TMS, F_TLS, slice=2)
 a = grid_mouton(200, Equilibrium, positions_mars, m_M)
+b = grid_mouton(200, Equilibrium, positions_lune, m_L)
 
 # Remplir la grille de valeurs scalaires
 grid_scalar = pv.grid_from_sph_coords(xx_bounds, yy_bounds, levels)
@@ -69,7 +70,7 @@ print('Orient the view, then press "q" to close window and produce movie')
 p.show(auto_close=False)
 
 # Open a gif
-p.open_gif("maree.gif")
+p.open_gif("marée_mars_deux_semaines.gif")
 
 # Update Z and write a frame for each updated position
 for i in range(len(a)):
