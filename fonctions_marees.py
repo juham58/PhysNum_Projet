@@ -33,16 +33,26 @@ def C_2(R_astres, d_l, C_p):
 
 
 # fonction équilibrium tide
-def Equilibrium(x_l, y_l, z_l, masse_astre, theta, delta):
+def Equilibrium(x_l, y_l, z_l, x_s, y_s, z_s, masse_astre, theta, delta):
     m_e = 5.9722e24
-    Cte = r*masse_astre/m_e
-    R = R_l(x_l, y_l, z_l)
-    d_l = V_dl(R, z_l)
-    C0 = C_0(R, d_l)
+    m_s = 1.989e30
+    Cte_l = r*masse_astre/m_e
+    Rl = R_l(x_l, y_l, z_l)
+    d_l = V_dl(Rl, z_l)
+    C0 = C_0(Rl, d_l)
     C_p = Cp(x_l, y_l, theta)
-    C1 = C_1(R, d_l, C_p)
-    C2 = C_2(R, d_l, C_p)
-    return Cte*(C0*(1.5*np.sin(delta)**2.0 - 0.5) + C1*np.sin(2*delta) + C2*np.cos(delta)**2)
+    C1 = C_1(Rl, d_l, C_p)
+    C2 = C_2(Rl, d_l, C_p)
+    Cte_s = r*m_s/m_e
+    Rs = R_l(x_s, y_s, z_s)
+    d_s = V_dl(Rs, z_s)
+    C0s = C_0(Rs, d_s)
+    C_ps = Cp(x_s, y_s, theta)
+    C1s = C_1(Rs, d_s, C_ps)
+    C2s = C_2(Rs, d_s, C_ps)
+    F_astre = Cte_l*(C0*(1.5*np.sin(delta)**2.0 - 0.5) + C1*np.sin(2*delta) + C2*np.cos(delta)**2)
+    F_soleil = Cte_s*(C0s*(1.5*np.sin(delta)**2.0 - 0.5) + C1s*np.sin(2*delta) + C2s*np.cos(delta)**2)
+    return F_astre + F_soleil
 
 
 if __name__ == '__main__':
