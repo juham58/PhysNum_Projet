@@ -31,15 +31,14 @@ yy_bounds = _cell_bounds(y_polar)
 levels = [RADIUS * 1.01]
 
 
-positions_mars = mouton_3_corps(0, 3 * 24 * 3600, 2000, sys_TMS, F_TMS, slice=8)
-print(positions_mars)
-positions_lune = mouton_3_corps(0, 3 * 24 * 3600, 2000, sys_TMS, F_TLS, slice=8)
+positions_mars = mouton_3_corps(0, 31 * 24 * 3600, 2000, sys_TMS, F_TMS, slice=8)
+positions_lune = mouton_3_corps(0, 31 * 24 * 3600, 2000, sys_TMS, F_TLS, slice=8)
 a = grid_mouton(50, Equilibrium, positions_mars, m_M)
 
 
 # Remplir la grille de valeurs scalaires
 grid_scalar = pv.grid_from_sph_coords(xx_bounds, yy_bounds, levels)
-grid_scalar.cell_arrays["Hauteur de la marée (mètres)"] = np.array(a[6]).swapaxes(-2, -1).ravel("C")
+grid_scalar.cell_arrays["Hauteur de la marée (mètres)"] = np.array(a[0]).swapaxes(-2, -1).ravel("C")
 a = grid_scalar
 
 
@@ -63,5 +62,5 @@ p = pv.Plotter()
 p.add_mesh(pv.Sphere(radius=RADIUS), color="white", style="surface")
 p.show_bounds()
 p.add_point_labels(Points_array, label)
-p.add_mesh(grid_scalar, clim=[-2.00, 3.50], opacity=0.9, cmap="cividis")
+p.add_mesh(grid_scalar, clim=[-4.00, 6.00], opacity=0.95, cmap="cividis")
 p.show()
