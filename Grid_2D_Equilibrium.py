@@ -35,7 +35,6 @@ def grid_mouton(N, equilib, sm, masse_astre):
         G = np.zeros((N, N))
         G = equilib(sm["L"][i, 0], sm["L"][i, 1], sm["L"][i, 2], sm["S"][i, 0], sm["S"][i, 1], sm["S"][i, 2], masse_astre, theta, delta)
         liste.append(G)
-        print(sm["t"])
     return liste
 
 
