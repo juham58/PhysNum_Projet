@@ -29,10 +29,9 @@ def grid_mouton(N, equilib, sm, masse_astre):
     lon = np.linspace(-1.0 * np.pi, 1.0 * np.pi, N)
     lat = np.linspace(-0.5 * np.pi, 0.5 * np.pi, N)
     theta, delta = np.meshgrid(lon, lat)
-    G = np.zeros((N, N))
-    M = sm
     liste = []
-    for i in range(len(M["t"])):
+    for i in range(len(sm["t"])):
+        G = np.zeros((N, N))
         print(i)
         for j in range(N):
             for k in range(N):
@@ -50,3 +49,4 @@ if __name__ == '__main__':
     positions_mars = mouton_3_corps(0, 31 * 24 * 3600, 2000, sys_TMS, F_TMS, slice=6)
     positions_lune = mouton_3_corps(0, 31 * 24 * 3600, 2000, sys_TMS, F_TLS, slice=6)
     a = grid_mouton(50, Equilibrium, positions_mars, m_M)
+    print(a)
