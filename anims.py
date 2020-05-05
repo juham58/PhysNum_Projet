@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import matplotlib.patches as patches
-from saute_mouton import mouton_3_corps, mouton_2_corps
+from saute_mouton import mouton_3_corps
 
 
 def anim_3_corps(t_i, t_f, N, c_init, F, slice):
@@ -28,35 +28,12 @@ def anim_3_corps(t_i, t_f, N, c_init, F, slice):
     plt.show()
 
 
-def anim_2_corps_satellite(t_i, t_f, N, c_init, F, slice):
-    mouton = mouton_2_corps(t_i, t_f, N, c_init, F, slice)
-    fig, ax = plt.subplots()
-    ax.set(xlim=(-4e8, 4e8), ylim=(-4e8, 4e8))
-
-    ligne_S, = ax.plot(c_init[0][1][0], c_init[0][1][1], 'r-', label="Satellite", zorder=3)
-    cercle = plt.Circle((0, 0), radius=1993920, alpha=0.95, zorder=10, color="maroon")
-    ax.add_patch(cercle)
-
-    anim_ligne_S = lambda i: ligne_S.set_data(mouton["L"][:i, 0], mouton["L"][:i, 1])
-    anim_lim_roche = lambda i: cercle.set_center((mouton["L"][i, 0], mouton["L"][i, 1]))
-    anim_titre = lambda i: ax.set_title("Mouvement des trois corps\nà t= {} jours".format(round(mouton["t"][i]/(24*3600), 3)))
-
-    frames_anim = len(mouton["t"])
-    graph_anim_S = FuncAnimation(fig, anim_ligne_S, frames=frames_anim, interval=1)
-    graph_roche = FuncAnimation(fig, anim_lim_roche, frames=frames_anim, interval=1)
-    graph_anim_titre = FuncAnimation(fig, anim_titre, frames=frames_anim, interval=1)
-    ax.add_patch(patches.Circle((0, 0), radius=8993920, alpha=0.6, color="black"))
-    plt.legend()
-    plt.grid()
-    plt.show()
-
-
 def anim_3_corps_satellite(t_i, t_f, N, c_init, F, slice):
     mouton = mouton_3_corps(t_i, t_f, N, c_init, F, slice)
     fig, ax = plt.subplots()
-    ax.set(xlim=(-4e8, 4e8), ylim=(-4e8, 4e8))
+    ax.set(xlim=(-5e8, 5e8), ylim=(-5e8, 5e8))
 
-    ligne_S, = ax.plot(c_init["Mars"]["x"], c_init["Mars"]["y"], 'r--', linewidth=0.5, label="Satellite", zorder=3)
+    ligne_S, = ax.plot(c_init["Mars"]["x"], c_init["Mars"]["y"], 'r--', linewidth=0.2, label="Satellite", zorder=3)
     cercle = plt.Circle((0, 0), radius=1993920, alpha=0.95, zorder=10, color="maroon")
     ax.add_patch(cercle)
 
@@ -71,4 +48,5 @@ def anim_3_corps_satellite(t_i, t_f, N, c_init, F, slice):
     ax.add_patch(patches.Circle((0, 0), radius=8993920, alpha=0.6, color="black"))
     plt.legend()
     plt.grid()
+    graph_anim_S.save('{}_jours_{}_N.mp4', writer=writer)
     plt.show()
