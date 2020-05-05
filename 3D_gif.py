@@ -31,8 +31,8 @@ yy_bounds = _cell_bounds(y_polar)
 levels = [RADIUS * 1.01]
 
 
-positions_mars = mouton_3_corps(0, 3 * 24 * 3600, 2000, sys_TMS, F_TMS, slice=7)
-positions_lune = mouton_3_corps(0, 3 * 24 * 3600, 2000, sys_TMS, F_TLS, slice=7)
+positions_mars = mouton_3_corps(0, 31 * 24 * 3600, 2000, sys_TMS, F_TMS, slice=6)
+positions_lune = mouton_3_corps(0, 31 * 24 * 3600, 2000, sys_TMS, F_TLS, slice=6)
 a = grid_mouton(50, Equilibrium, positions_mars, m_M)
 
 # Remplir la grille de valeurs scalaires
@@ -60,7 +60,7 @@ p = pv.Plotter()
 p.add_mesh(pv.Sphere(radius=RADIUS), color="white", style="surface")
 p.show_bounds()
 p.add_point_labels(Points_array, label)
-p.add_mesh(grid_scalar, clim=[-2.00, 3.50], opacity=0.9, cmap="cividis")
+p.add_mesh(grid_scalar, clim=[-4.00, 6.00], opacity=0.9, cmap="cividis")
 
 
 print('Orient the view, then press "q" to close window and produce movie')
@@ -73,7 +73,6 @@ p.open_gif("maree.gif")
 
 # Update Z and write a frame for each updated position
 for i in range(len(a)):
-    print(a[i])
     grid_scalar.cell_arrays["Hauteur de la maree (m)"] = np.array(a[i]).swapaxes(-2, -1).ravel("C")
     p.write_frame()
 
