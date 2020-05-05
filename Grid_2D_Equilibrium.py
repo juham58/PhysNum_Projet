@@ -1,6 +1,12 @@
 from fonctions_marees import Equilibrium
 import numpy as np
+from saute_mouton import mouton_3_corps, sys_TMS, F_TLS, F_TMS
 
+
+m_T = 5.9722*1e24  # Terre
+m_S = 1.989*1e30  # Soleil
+m_L = 7.349*1e22  # Lune
+m_M = 0.107*m_T  # Mars
 
 # def f(x, y):
     # return y * np.sin(x)
@@ -16,7 +22,23 @@ def grid_fct(N, fct):
         for j in range(N):
             G[i,j] = fct(theta[i,j], delta[i,j])
 
-    return theta, delta, G
+    return G
+
+
+def grid_mouton(N, equilib, sm, masse_astre):
+    lon = np.linspace(-1.0 * np.pi, 1.0 * np.pi, N)
+    lat = np.linspace(-0.5 * np.pi, 0.5 * np.pi, N)
+    theta, delta = np.meshgrid(lon, lat)
+    G = np.zeros((N, N))
+    M = sm
+    liste = []
+    for i in range(len(M["t"])):
+        print(i)
+        for j in range(N):
+            for k in range(N):
+                G[j, k] = equilib(sm["L"][i, 0], sm["L"][i, 1], sm["L"][i, 2], sm["S"][i, 0], sm["S"][i, 1], sm["S"][i, 2], masse_astre, theta[j, k], delta[j, k])
+        liste.append(G)
+    return liste
 
 
 # Retourne une fonction Equilibrium avec seulement theta et delta comme valeur (1 position et 1 masse)
@@ -25,6 +47,6 @@ def fonc_Equilibrium(x_l, y_l, z_l, m_astre):
 
 
 if __name__ == '__main__':
-    # fct_Equilibrium is the new Equilibrium(theta, delta)
-    fct_Equilibrium = fonc_Equilibrium(384400000.0, 235828.00, 492358.0, 6.4185e23)
-    Grid_equilibrium = grid_fct(200, fct_Equilibrium)
+    positions_mars = mouton_3_corps(0, 31 * 24 * 3600, 2000, sys_TMS, F_TMS, slice=6)
+    positions_lune = mouton_3_corps(0, 31 * 24 * 3600, 2000, sys_TMS, F_TLS, slice=6)
+    a = grid_mouton(50, Equilibrium, positions_mars, m_M)
