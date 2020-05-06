@@ -39,7 +39,7 @@ def anim_3_corps_satellite(t_i, t_f, N, c_init, F, slice):
 
     anim_ligne_S = lambda i: ligne_S.set_data(mouton["L"][:i, 0], mouton["L"][:i, 1])
     anim_lim_roche = lambda i: cercle.set_center((mouton["L"][i, 0], mouton["L"][i, 1]))
-    anim_titre = lambda i: ax.set_title("Mouvement des trois corps\nà t= {} jours".format(round(mouton["t"][i]/(24*3600), 3)))
+    anim_titre = lambda i: ax.set_title("Mouvement du satellite par rapport à la Terre\nà t= {} jours".format(round(mouton["t"][i]/(24*3600), 3)))
 
     frames_anim = len(mouton["t"])
     graph_anim_S = FuncAnimation(fig, anim_ligne_S, frames=frames_anim, interval=1)
@@ -48,5 +48,4 @@ def anim_3_corps_satellite(t_i, t_f, N, c_init, F, slice):
     ax.add_patch(patches.Circle((0, 0), radius=8993920, alpha=0.6, color="black"))
     plt.legend()
     plt.grid()
-    graph_anim_S.save('{}_jours_{}_N.mp4', writer=writer)
     plt.show()

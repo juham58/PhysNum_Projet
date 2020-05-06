@@ -2,6 +2,9 @@ import numpy as np
 import time
 
 
+# Algorithme pour calculer les positions de trois corps à partir de saute-mouton
+# le temps d'exécution dépend du nombre de tranches N
+# rapidité d'environ 6667 tranches par seconde
 def mouton_3_corps(t_i, t_f, N, c_init, F, slice=0, var= "x", tol_valide=True, verbose=False):
     t_debut = time.process_time()
     t_points = np.linspace(t_i, t_f, N)
