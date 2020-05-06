@@ -1,4 +1,5 @@
 import numpy as np
+from saute_mouton import sys_TMS_stable
 
 
 r = 6371000.0
@@ -27,9 +28,9 @@ def C_1(R_astres, d_l, C_p):
     return (r/R_astres)**3.0 * (0.75)*np.sin(2.0*d_l)*np.cos(2.0*C_p)
 
 
-# C_2(t) calculé
-def C_2(R_astres, d_l, C_p):
-    return (r/R_astres)**3.0 * (0.75)*np.cos(d_l)**2.0 * np.cos(2*C_p)
+# C_2(t) calculé selon la distance R_astre, d_l et C_p
+def C_2(R_astre, d_l, C_p):
+    return (r/R_astre)**3.0 * (0.75)*np.cos(d_l)**2.0 * np.cos(2*C_p)
 
 
 # fonction équilibrium tide
@@ -56,10 +57,5 @@ def Equilibrium(x_l, y_l, z_l, x_s, y_s, z_s, masse_astre, theta, delta):
 
 
 if __name__ == '__main__':
-    x_l = 384400000.0
-    y_l = 235828.00
-    z_l = 492358.0
-    theta = 0.213
-    delta = 0.012
-    a = Equilibrium(x_l, y_l, z_l, 6.4185e23, theta, delta)
-    print(a)
+    # Trouvons R_Mars à sa position initiale pour observer son apport en F_g sur la planète
+    print(R_l(sys_TMS_stable["Mars"]["x"],sys_TMS_stable["Mars"]["y"],sys_TMS_stable["Mars"]["z"]))
