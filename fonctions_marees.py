@@ -51,9 +51,9 @@ def Equilibrium(x_l, y_l, z_l, x_s, y_s, z_s, masse_astre, theta, delta):
     C_ps = Cp(x_s, y_s, theta)
     C1s = C_1(Rs, d_s, C_ps)
     C2s = C_2(Rs, d_s, C_ps)
-    F_astre = Cte_l*(C0*(1.5*np.sin(delta)**2.0 - 0.5) + C1*np.sin(2*delta) + C2*np.cos(delta)**2)
-    F_soleil = Cte_s*(C0s*(1.5*np.sin(delta)**2.0 - 0.5) + C1s*np.sin(2*delta) + C2s*np.cos(delta)**2)
-    return F_astre + F_soleil
+    H_astre = Cte_l*(C0*(1.5*np.sin(delta)**2.0 - 0.5) + C1*np.sin(2*delta) + C2*np.cos(delta)**2)
+    H_soleil = Cte_s*(C0s*(1.5*np.sin(delta)**2.0 - 0.5) + C1s*np.sin(2*delta) + C2s*np.cos(delta)**2)
+    return H_astre + H_soleil
 
 
 if __name__ == '__main__':
