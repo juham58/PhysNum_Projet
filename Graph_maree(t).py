@@ -14,6 +14,7 @@ positions_mars = mouton_3_corps(0, 31 * 24 * 3600, 2000, sys_TMS_stable, F_TMS, 
 positions_lune = mouton_3_corps(0, 31 * 24 * 3600, 2000, sys_TMS, F_TLS, slice=2)
 
 
+# Fonction qui fait un graphique de la hauteur de la marée à un point précis sur terre selon le temps
 def graph_maree_1pt(equilib, sm, masse_astre, teta, deta):
     liste1 = []
     for i in range(len(sm["t"])):
