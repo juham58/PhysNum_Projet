@@ -28,8 +28,8 @@ xx_bounds = _cell_bounds(x)
 yy_bounds = _cell_bounds(y_polar)
 levels = [RADIUS * 1.01]
 
-positions_mars = mouton_3_corps(0, 14 * 24 * 3600, 2000, sys_TMS_stable, F_TMS, slice=3)
-positions_lune = mouton_3_corps(0, 14 * 24 * 3600, 2000, sys_TMS, F_TLS, slice=3)
+positions_mars = mouton_3_corps(0, 14 * 24 * 3600, 2000, sys_TMS_stable, F_TMS, slice=2)
+positions_lune = mouton_3_corps(0, 14 * 24 * 3600, 2000, sys_TMS, F_TLS, slice=2)
 a = grid_mouton(200, Equilibrium, positions_mars, m_M)
 b = grid_mouton(200, Equilibrium, positions_lune, m_L)
 
@@ -66,18 +66,18 @@ def plot_3Dgif(grid_scalaire, grid, clim, nomgif, nom_scalaire):
 
     print('Orienter la vue, et peser "q" pour fermer la fenêtre et produire le gif')
 
-    # setup camera and close
+    # Positionne la caméra
     p.show(auto_close=False)
 
-    # Open a gif
+    # Ouvre un gif
     p.open_gif(nomgif)
 
-    # Update Z and write a frame for each updated position
+    # Ajuste le quadrillé de scalaires pour chaque nouvelle position de satellite et de soleil
     for i in range(len(a)):
         grid_scalaire.cell_arrays[nom_scalaire] = np.array(grid[i]).swapaxes(-2, -1).ravel("C")
         p.write_frame()
 
-# Close movie and delete object
+# Ferme le Gif
     p.close()
 
 print("Les gifs seront présentés l'un après l'autre")
