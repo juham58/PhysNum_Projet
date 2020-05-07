@@ -34,6 +34,7 @@ def grid_fct(N, fct):
     plt.show()
 
 
+# fonction qui crée une liste d'array de NxN. Chaque array est un champ scalaire pour une différente position d'astres
 def grid_mouton(N, equilib, sm, masse_astre):
     lon = np.linspace(-1.0 * np.pi, 1.0 * np.pi, N)
     lat = np.linspace(-0.5 * np.pi, 0.5 * np.pi, N)
