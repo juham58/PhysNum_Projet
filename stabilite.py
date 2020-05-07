@@ -1,8 +1,8 @@
 import numpy as np
 import pickle
 from pathlib import Path
-from mecanique_celeste.graphiques import graph_stab
-from algorithmes.saute_mouton import mouton_3_corps
+from graphiques import graph_stab
+from saute_mouton import mouton_3_corps
 
 
 # système Terre-Mars-Soleil

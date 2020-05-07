@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import matplotlib.patches as patches
-from algorithmes.saute_mouton import mouton_3_corps
+from saute_mouton import mouton_3_corps
 
 
 def anim_3_corps(t_i, t_f, N, c_init, F, slice):

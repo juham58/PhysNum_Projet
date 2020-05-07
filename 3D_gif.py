@@ -1,8 +1,8 @@
 import pyvista as pv
 import numpy as np
-from fonctions_etude_marees.Grid_2D_Equilibrium import grid_mouton
-from algorithmes.saute_mouton import mouton_3_corps, sys_TMS_stable, F_TMS, F_TLS, sys_TMS
-from fonctions_etude_marees.fonctions_marees import Equilibrium
+from Grid_2D_Equilibrium import grid_mouton
+from saute_mouton import mouton_3_corps, sys_TMS_stable, F_TMS, F_TLS, sys_TMS
+from fonctions_marees import Equilibrium
 
 m_T = 5.9722 * 1e24  # Terre
 m_S = 1.989 * 1e30  # Soleil

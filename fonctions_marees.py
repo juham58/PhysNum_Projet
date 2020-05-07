@@ -1,5 +1,5 @@
 import numpy as np
-from algorithmes.saute_mouton import sys_TMS_stable
+from saute_mouton import sys_TMS_stable
 
 
 r = 6371000.0

@@ -1,7 +1,7 @@
 from fonctions_etude_marees.fonctions_marees import Equilibrium
 import numpy as np
 import matplotlib.pyplot as plt
-from algorithmes.saute_mouton import sys_TMS_stable, mouton_3_corps, sys_TMS, F_TMS, F_TLS
+from saute_mouton import sys_TMS_stable, mouton_3_corps, sys_TMS, F_TMS, F_TLS
 
 
 m_T = 5.9722*1e24  # Terre

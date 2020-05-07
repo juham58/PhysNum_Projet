@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-from algorithmes.saute_mouton import mouton_3_corps
+from saute_mouton import mouton_3_corps
 
 plt.rcParams.update({'font.size': 14})
 
